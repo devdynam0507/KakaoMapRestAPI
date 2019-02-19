@@ -1,6 +1,8 @@
 package com.ndy.api;
 
 import com.ndy.util.HttpConnectUtil;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,9 +12,24 @@ import java.net.HttpURLConnection;
 public class KakaoRestAPIExecutor extends Thread implements Runnable {
 
     private KakaoRestAPI api;
+    private String json;
 
     public KakaoRestAPIExecutor(KakaoRestAPI api) {
         this.api = api;
+    }
+
+    /**
+     * @return json
+     * */
+    public String execute() {
+        try {
+            start();
+            join();
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return json;
     }
 
     @Override
@@ -21,9 +38,7 @@ public class KakaoRestAPIExecutor extends Thread implements Runnable {
         HttpConnectUtil.setRequestMethod(connection, api.getApiType().getRequestType().name());
         HttpConnectUtil.setRequestProperty(connection, "Authorization", api.getAuthorization().getAuthorizationKey());
 
-        boolean success = read(connection);
-
-        System.out.println("success: " + success);
+        read(connection);
     }
 
     private synchronized boolean read(HttpURLConnection connection) {
@@ -38,7 +53,7 @@ public class KakaoRestAPIExecutor extends Thread implements Runnable {
 
             while((line = reader.readLine()) != null) builder.append(line);
 
-            System.out.println(builder.toString());
+            this.json = builder.toString();
             return true;
         }catch (IOException e) {
             e.printStackTrace();
